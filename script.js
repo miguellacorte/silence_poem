@@ -10,6 +10,9 @@ let lineHeight;
 let scroll;
 let soundscape;
 let started = false;
+let infoIcon, soundButton, infoPopup, soundOn, soundOff;
+let soundMuted = false;
+let soundState = "On";
 
 // create variables for type animation
 let typeAnimationStart;
@@ -17,7 +20,13 @@ let indexSinceStart;
 let lineIndex = 0;
 
 function preload() {
-  // load font and text
+  soundOn = loadImage("assets/SoundOn_icon.png", () => {
+    console.log("SoundOn image loaded successfully");
+  });
+  soundOff = loadImage("assets/SoundOff_icon.png", () => {
+    console.log("SoundOff image loaded successfully");
+  });
+
   font = loadFont("assets/helvetica.ttf");
   fontBold = loadFont("assets/helvetica-bold.ttf");
   fontItalic = loadFont("assets/helvetica-italic.ttf");
@@ -26,11 +35,10 @@ function preload() {
 }
 
 function startPoemAndAudio() {
-  // Your logic to start the poem
   setTimeout(() => {
-    soundscape.play(); // Start the audio after 2 seconds (2000 milliseconds)
+    soundscape.play(); // starts  audio after 2 seconds
   }, 2000);
-  started = true; // Indicate that the poem and audio will start
+  started = true; // Indicates that the poem and audio will start
 }
 
 function keyPressed() {
@@ -39,6 +47,36 @@ function keyPressed() {
     startPoemAndAudio();
     started = true; // Prevents the audio from restarting if the spacebar is pressed again
   }
+}
+
+function toggleInfoPopup() {
+  if (
+    infoPopup.elt.style.display === "none" ||
+    infoPopup.elt.style.display === ""
+  ) {
+    infoPopup.show();
+  } else {
+    infoPopup.hide();
+  }
+}
+
+function toggleSound() {
+  soundMuted = !soundMuted; //  sound state toggle
+
+  if (soundMuted) {
+    soundscape.setVolume(0); // Mute
+    soundState = "Off";
+  } else {
+    soundscape.setVolume(1); // sound on
+    soundState = "On";
+  }
+  // updates the image source based on the new sound state
+  soundButton.elt.src = "assets/Sound" + soundState + "_icon.png";
+}
+
+// hide info popup
+function hideInfoPopup() {
+  infoPopup.hide();
 }
 
 function setup() {
@@ -123,6 +161,87 @@ function setup() {
     // push to poem array
     poem.push(currentLine);
   }
+
+  //  'info' button
+  infoIcon = createImg("assets/information_icon.png", "info");
+  infoIcon
+    .style("cursor", "pointer")
+    .style("width", "20px")
+    .style("position", "absolute")
+    .style("margin-left", "20px")
+    .style("z-index", "3")
+    .mousePressed(toggleInfoPopup);
+
+  //  'sound' button
+  soundOn = loadImage("assets/SoundOn_icon.png");
+  soundOff = loadImage("assets/SoundOff_icon.png");
+  soundButton = createImg("assets/SoundOn_icon.png", "sound");
+  soundButton
+    .style("width", "25px")
+    .style("cursor", "pointer")
+    .style("position", "absolute")
+    .style("margin-top", "1px")
+    .style("z-index", "3")
+    .mousePressed(toggleSound);
+
+  // Create 'info' popup and hide by default
+  infoPopup = createDiv();
+  infoPopup
+    .style("background-color", "#fff")
+    .style("border", "1px solid #000")
+    .style("width", "30%")
+    .style("height", "40%")
+    .style("position", "absolute")
+    .style("top", "50%")
+    .style("left", "50%")
+    .style("transform", "translate(-50%, -50%)")
+    .style("z-index", "2")
+    .style("display", "flex")
+    .style("flex-direction", "column")
+    .style("align-items", "center")
+    .style("justify-content", "center")
+    .hide();
+
+  //popup close button
+  let closeButton = createButton("X");
+  closeButton.parent(infoPopup); // Make it a child of infoPopup
+  closeButton
+    .style("position", "absolute")
+    .style("top", "5px")
+    .style("left", "5px")
+    .style("background", "transparent")
+    .style("border", "none")
+    .style("font-size", "20px")
+    .style("z-index", "3")
+    .mousePressed(hideInfoPopup);
+
+  // title and text content
+  let title = createElement("h3", "Contributions");
+  title.parent(infoPopup);
+  title
+    .style("font-family", "Helvetica-Bold")
+    .style("font-size", "20px")
+    .style("font-weight", "bold")
+    .style("margin-top", "40px")
+    .style("margin-left", "20px");
+
+  let content = createDiv(
+    "<br>Raphael Koranda: Poem, concept.<br> <br> Miguel La Corte: web dev and soundscape composition"
+  );
+  content.parent(infoPopup);
+  content
+    .style("font-family", "Helvetica")
+    .style("font-size", "18px")
+    .style("margin-left", "20px")
+    .style("margin-top", "4px")
+    .style("margin-right", "12px");
+
+  infoIcon.style("z-index", "2");
+  soundButton
+    .style("z-index", "2")
+    .style("margin-right", "3px")
+    .style("margin-left", "10px");
+  infoPopup.style("z-index", "2");
 }
 
 function draw() {
@@ -130,7 +249,7 @@ function draw() {
     background(255); // Clear the background
     fill(0); // Set text color to black
     text("Press spacebar to start", width / 2.5, height / 2); // Display the instruction text
-	textSize(24)
+    textSize(24);
   } else {
     // animation starts 2 seconds after canvas has been setup
     if (millis() > 2000) {
@@ -248,4 +367,6 @@ function draw() {
       });
     }
   }
+  infoIcon.position(windowWidth - 60 - 50, 10);
+  soundButton.position(windowWidth - 10 - 50, 10);
 }

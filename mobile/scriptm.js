@@ -121,7 +121,8 @@ function draw() {
   if (!started) {
     background(255); // Clear the background
     fill(0); // Set text color to black
-    text("Press to start", width / 2, height / 2); // Display the instruction text
+    textSize(16)
+    text("Touch to start", width / 2.75, height / 2); // Display the instruction text
   } else {
     // animation starts 2 seconds after canvas has been setup
     if (millis() > 2000) {
