@@ -4,12 +4,16 @@ let lineHeight;
 let scroll;
 let mobileSoundscape;
 let started = false;
-
+let infoIcon, soundButton, soundOn, soundOff;
+let soundMuted = false;
+let soundState = "On";
+let infoPopup;
 
 // create variables for type animation
 let typeAnimationStart;
 let indexSinceStart;
 let lineIndex = 0;
+
 
 function preload() {
   // load font and text
@@ -18,6 +22,8 @@ function preload() {
   fontItalic = loadFont("assets/helvetica-italic.ttf");
   raw = loadStrings("assets/silm.txt");
   mobileSoundscape = loadSound("assets/mobile_soundscape.mp3");
+  soundOn = loadImage("assets/SoundOn_icon.png");
+  soundOff = loadImage("assets/SoundOff_icon.png");
 }
 
 function touchStarted() {
@@ -34,12 +40,115 @@ function startPoemAndAudio() {
   started = true; // Indicate that the poem and audio will start
 }
 
+function toggleInfoPopup() {
+  // Implement your info popup toggle logic here
+}
+
+function toggleSound() {
+  soundMuted = !soundMuted;
+
+  if (soundMuted) {
+    mobileSoundscape.setVolume(0);
+    soundState = "Off";
+  } else {
+    mobileSoundscape.setVolume(1);
+    soundState = "On";
+  }
+
+  soundButton.elt.src = "assets/Sound" + soundState + "_icon.png";
+}
+
+function toggleInfoPopup() {
+  if (
+    infoPopup.elt.style.display === "none" ||
+    infoPopup.elt.style.display === ""
+  ) {
+    infoPopup.show();
+  } else {
+    infoPopup.hide();
+  }
+}
+
+function hideInfoPopup() {
+  infoPopup.hide();
+}
+
 function setup() {
   // setup canvas and font
   createCanvas(windowWidth, windowHeight);
   background(255);
   fill(0);
   frameRate(60);
+
+  infoIcon = createImg("assets/information_icon.png", "info");
+  infoIcon
+    .style("cursor", "pointer")
+    .style("width", "20px")
+    .style("position", "absolute")
+    .style("margin-left", "20px")
+    .style("left", "20px") 
+    .style("z-index", "3")
+    .mousePressed(toggleInfoPopup);
+
+  soundButton = createImg("assets/SoundOn_icon.png", "sound");
+  soundButton
+    .style("width", "25px")
+    .style("cursor", "pointer")
+    .style("position", "absolute")
+    .style("margin-top", "1px")
+    .style("margin-left", "15px")
+    .style("margin-right", "10px")
+    .style("z-index", "3")
+    .mousePressed(toggleSound);
+
+  infoPopup = createDiv();
+  infoPopup
+    .style("background-color", "#fff")
+    .style("border", "1px solid #000")
+    .style("width", "80%") // Wider for mobile
+    .style("height", "60%") // Taller for mobile
+    .style("position", "absolute")
+    .style("top", "50%")
+    .style("left", "50%")
+    .style("transform", "translate(-50%, -50%)")
+    .style("z-index", "2")
+    .style("display", "flex")
+    .style("flex-direction", "column")
+    .style("align-items", "center")
+    .style("justify-content", "center")
+    .hide();
+
+  let closeButton = createButton("X");
+  closeButton.parent(infoPopup);
+  closeButton
+    .style("position", "absolute")
+    .style("top", "5px")
+    .style("left", "5px")
+    .style("background", "transparent")
+    .style("border", "none")
+    .style("font-size", "16px") // Smaller for mobile
+    .style("z-index", "3")
+    .mousePressed(hideInfoPopup); // You'll need to implement hideInfoPopup
+
+  let title = createElement("h3", "Contributions");
+  title.parent(infoPopup);
+  title
+    .style("font-family", "Helvetica-Bold")
+    .style("font-size", "16px") // Smaller for mobile
+    .style("font-weight", "bold")
+    .style("margin-top", "20px")
+    .style("margin-left", "10px");
+
+  let content = createDiv(
+    "<br>Raphael Koranda: Poem, concept.<br> <br> Miguel La Corte: web dev and soundscape composition"
+  );
+  content.parent(infoPopup);
+  content
+    .style("font-family", "Helvetica")
+    .style("font-size", "14px") // Smaller for mobile
+    .style("margin-left", "10px")
+    .style("margin-top", "4px")
+    .style("margin-right", "8px");
 
   // scroll turned on
   scroll = true;
@@ -121,7 +230,7 @@ function draw() {
   if (!started) {
     background(255); // Clear the background
     fill(0); // Set text color to black
-    textSize(16)
+    textSize(16);
     text("Touch to start", width / 2.75, height / 2); // Display the instruction text
   } else {
     // animation starts 2 seconds after canvas has been setup
@@ -240,6 +349,8 @@ function draw() {
       });
     }
   }
+  infoIcon.position(windowWidth - 60 - 50, 10);
+  soundButton.position(windowWidth - 10 - 50, 10);
 }
 
 // ruby -run -e httpd . -p 8000

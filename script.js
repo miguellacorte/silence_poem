@@ -14,16 +14,21 @@ let infoIcon, soundButton, infoPopup, soundOn, soundOff;
 let soundMuted = false;
 let soundState = "On";
 
-// create variables for type animation
+const SOUND_ON_ICON = "assets/SoundOn_icon.png";
+const SOUND_OFF_ICON = "assets/SoundOff_icon.png";
+const START_DELAY = 2000; // milliseconds
+
+
+//  variables for type animation
 let typeAnimationStart;
 let indexSinceStart;
 let lineIndex = 0;
 
 function preload() {
-  soundOn = loadImage("assets/SoundOn_icon.png", () => {
+  soundOn = loadImage(SOUND_ON_ICON, () => {
     console.log("SoundOn image loaded successfully");
   });
-  soundOff = loadImage("assets/SoundOff_icon.png", () => {
+  soundOff = loadImage(SOUND_OFF_ICON, () => {
     console.log("SoundOff image loaded successfully");
   });
 
@@ -36,9 +41,9 @@ function preload() {
 
 function startPoemAndAudio() {
   setTimeout(() => {
-    soundscape.play(); // starts  audio after 2 seconds
-  }, 2000);
-  started = true; // Indicates that the poem and audio will start
+    soundscape.play();
+  }, START_DELAY);
+  started = true;
 }
 
 function keyPressed() {
@@ -175,7 +180,7 @@ function setup() {
   //  'sound' button
   soundOn = loadImage("assets/SoundOn_icon.png");
   soundOff = loadImage("assets/SoundOff_icon.png");
-  soundButton = createImg("assets/SoundOn_icon.png", "sound");
+  soundButton = createImg(SOUND_ON_ICON, "sound");
   soundButton
     .style("width", "25px")
     .style("cursor", "pointer")
