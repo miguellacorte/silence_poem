@@ -231,7 +231,7 @@ function setup() {
     .style("margin-left", "20px");
 
   let content = createDiv(
-    "<br>Raphael Koranda: Poem, concept.<br> <br> Miguel La Corte: web dev and soundscape composition"
+    "<br>Raphael Koranda: Text, concept.<br> <br> Karin Knuttson: web development <br> <br>  Miguel La Corte: soundscape composition an web development"
   );
   content.parent(infoPopup);
   content
