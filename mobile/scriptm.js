@@ -8,8 +8,10 @@ let infoIcon, soundButton, soundOn, soundOff;
 let soundMuted = false;
 let soundState = "On";
 let infoPopup;
+let staticGraphics;
+let dynamicGraphics;
 
-// create variables for type animation
+// variables for type animation
 let typeAnimationStart;
 let indexSinceStart;
 let lineIndex = 0;
@@ -36,12 +38,12 @@ function touchStarted() {
   if (!started) {
     startPoemAndAudio();
   }
-//   return false; // prevent any default behavior
+  //   return false; // prevent any default behavior
 }
 
 function startPoemAndAudio() {
   setTimeout(() => {
-    mobileSoundscape.play(); // Start the audio after 2 seconds (2000 milliseconds)
+    mobileSoundscape.play(); // Start the audio after 2 seconds
   }, 2000);
   started = true; // Indicate that the poem and audio will start
 }
@@ -134,7 +136,7 @@ function setup() {
     .style("border", "none")
     .style("font-size", "16px") // Smaller for mobile
     .style("z-index", "5")
-    .mousePressed(hideInfoPopup); // You'll need to implement hideInfoPopup
+    .mousePressed(hideInfoPopup);
 
   let title = createElement("h3", "<br><br>Contributions");
   title.parent(infoPopup);
@@ -230,189 +232,199 @@ function setup() {
     // push to poem array
     poem.push(currentLine);
   }
+
+  staticGraphics = createGraphics(windowWidth, windowHeight);
+  dynamicGraphics = createGraphics(windowWidth, windowHeight);
+
+  drawStaticText();
+}
+
+function drawStaticText() {
+  staticGraphics.push();
+  staticGraphics.fill(0);
+  staticGraphics.textSize(16);
+  staticGraphics.text("Touch to start", width / 2.75, height / 2);
+  staticGraphics.textSize(10);
+  staticGraphics.text("Please turn silent mode off", width / 3, height / 1.4);
+  staticGraphics.pop();
+}
+
+function drawDynamicContent() {
+  dynamicGraphics.clear(); // Clear previous frame
+
+  push();
+  if (millis() - lastSwitchTime > 1000) {
+    // Animate the switch toggle
+    if (switchDirection === "UP") {
+      switchY -= 1;
+      if (switchY <= height / 1.5 - 1) {
+        switchDirection = "DOWN";
+        lastSwitchTime = millis();
+      }
+    } else {
+      switchY += 1;
+      if (switchY >= height / 1.5 + 1) {
+        switchDirection = "UP";
+        lastSwitchTime = millis();
+      }
+    }
+  }
+
+  // Draw iPhone Switch background
+  fill(255);
+  stroke(0);
+  rect(switchX - 80, height / 1.5 - 10, 300, 20, 8);
+
+  // Draw orange square
+  fill(206, 87, 56);
+  rect(
+    switchX - 40 - switchWidth / 2,
+    height / 1.5 - 2,
+    switchWidth,
+    switchHeight
+  );
+
+  fill(161);
+  rect(switchX + switchWidth, height / 1.5 - 2, switchWidth, switchHeight);
+
+  fill(161);
+  rect(switchX + switchWidth - 40, height / 1.5 - 2, switchWidth, switchHeight);
+
+  // Draw iPhone Switch toggle (always gray)
+  fill(242, 242, 242);
+  stroke(0);
+  rect(switchX - 40 - switchWidth / 2, switchY, switchWidth, switchHeight);
+
+  pop();
 }
 
 function draw() {
+ 
   if (!started) {
-    push();
-    fill(0); // Set text color to black.
-    textSize(16);
-    text("Touch to start", width / 2.75, height / 2); // Display the instruction text
-    
+    background(255);
+    image(staticGraphics, 0, 0);
+    drawDynamicContent();
+    image(dynamicGraphics, 0, 0);
+    return; // Exit the draw function
+  }
 
-    // Draw text
-    push();
-   
-    textSize(10);
-    
-    text("Please turn silent mode off", width / 3, height / 1.4);
-    pop();
+  
+  if (millis() > 2000) {
+    // Refresh background & text color
+    background(255);
 
-    // Draw iPhone Switch background
-    fill(255);
-    stroke(0);
-    rect(switchX - 80, height / 1.5 - 10, 300, 20, 8);
+    // Align text
+    textAlign(LEFT, TOP);
 
-    // Draw orange square
-    fill(206, 87, 56);
-    rect(
-      switchX - 40 - switchWidth / 2,
-      height / 1.5 - 2,
-      switchWidth,
-      switchHeight
-    );
+    // Iterate through poem, line by line
+    poem.forEach((currentLine, index) => {
+      // check if current line is within canvas boundaries
+      if (
+        currentLine.position < height + currentLine.lineHeight * 3 &&
+        currentLine.position > -currentLine.lineHeight
+      ) {
+        // set font size
+        textSize(currentLine.fontSize);
 
-    fill(161);
-    rect(switchX + switchWidth, height / 1.5 - 2, switchWidth, switchHeight);
-
-    fill(161);
-    rect(
-      switchX + switchWidth - 40,
-      height / 1.5 - 2,
-      switchWidth,
-      switchHeight
-    );
-
-    // Draw iPhone Switch toggle (always gray)
-    fill(242, 242, 242);
-    stroke(0);
-    rect(switchX - 40 - switchWidth / 2, switchY, switchWidth, switchHeight);
-
-    // Control the timing for the switch toggle
-    if (millis() - lastSwitchTime > 1000) {
-      // Animate the switch toggle
-      if (switchDirection === "UP") {
-        switchY -= 1;
-        if (switchY <= height / 1.5 - 1) {
-          switchDirection = "DOWN";
-          lastSwitchTime = millis();
+        // set bold styles
+        if (currentLine.style === BOLD) {
+          textFont(fontBold);
+        } else if (currentLine.style === ITALIC) {
+          textFont(fontItalic);
+        } else {
+          textFont(font);
         }
-      } else {
-        switchY += 1;
-        if (switchY >= height / 1.5 + 1) {
-          switchDirection = "UP";
-          lastSwitchTime = millis();
+
+        // index for first ¶ sign - anything in here will blink
+        if (index === 67 || index === 563 || index === 573 || index === 744) {
+          // check if even or odd second before drawing text (for blinking effect)
+          if (Math.floor(millis() / 1000) % 2 === 0) {
+            text(currentLine.content, 32, currentLine.position);
+          }
+          // centre-aligned; I was alone...else to lick
+        } else if (
+          (index > 215 && index < 325) ||
+          (index > 82 && index < 91) ||
+          (index > 116 && index < 130) ||
+          (index > 463 && index < 470) ||
+          (index > 645 && index < 663) ||
+          (index > 634 && index < 637)
+        ) {
+          // push matrix to middle of canvas & draw centered text
+          push();
+          translate(width / 2, 0);
+          textAlign(CENTER, TOP);
+          text(currentLine.content, 32, currentLine.position);
+          pop();
+
+          // this is where the typing animation begins:
+        } else if (index > 339 && index < 362) {
+          // we keep scrolling until the first line is in the 1/8 of the height from the top
+          if (index === 340 && currentLine.position < width / 8) {
+            if (scroll) {
+              // pause scrolling
+              scroll = false;
+
+              // keep track of when animation starts
+              typeAnimationStart = millis();
+            }
+          }
+
+          if (!scroll) {
+            // check if we are on the right line
+            if (index - 340 === lineIndex) {
+              // 250 sets the speed of the typing
+              // divide time difference since start of animation by 250 to type four characters per second (set to 1000 for one character per second)
+              indexSinceStart = Math.floor(
+                (millis() - typeAnimationStart) / 200
+              );
+
+              if (indexSinceStart <= currentLine.content.length) {
+                text(
+                  currentLine.content.substring(0, indexSinceStart),
+                  32,
+                  currentLine.position
+                );
+              } else {
+                typeAnimationStart = millis();
+                lineIndex++;
+              }
+            }
+          }
+
+          // draw full line if we have already typed through this line
+          if (index - 340 < lineIndex) {
+            text(currentLine.content, 32, currentLine.position);
+          }
+
+          // keep scrolling when we are done typing the lines
+          if (lineIndex === 21) {
+            scroll = true;
+          }
+
+          // where the typing animation ends
+
+          // strikethrough in my bed there is a silhouette...and fall asleep
+        } else if (index > 541 && index < 553) {
+          // draw line over text (strike through text)
+          const lineWidth = textWidth(currentLine.content);
+          const yPosition = currentLine.position + 7;
+          line(32, yPosition, lineWidth + 32, yPosition);
+          text(currentLine.content, 32, currentLine.position);
+        } else {
+          // draw text
+          text(currentLine.content, 32, currentLine.position);
         }
       }
-    }
-    pop();
-  } else {
-    // animation starts 2 seconds after canvas has been setup
-    if (millis() > 2000) {
-      // refresh background & text color
-      background(255);
 
-      // align text
-      textAlign(LEFT, TOP);
-
-      // iterate through poem, line by line
-      poem.forEach((currentLine, index) => {
-        // check if current line is within canvas boundaries
-        if (
-          currentLine.position < height + currentLine.lineHeight * 3 &&
-          currentLine.position > -currentLine.lineHeight
-        ) {
-          // set font size
-          textSize(currentLine.fontSize);
-
-          // set bold styles
-          if (currentLine.style === BOLD) {
-            textFont(fontBold);
-          } else if (currentLine.style === ITALIC) {
-            textFont(fontItalic);
-          } else {
-            textFont(font);
-          }
-
-          // index for first ¶ sign - anything in here will blink
-          if (index === 67 || index === 563 || index === 573 || index === 744) {
-            // check if even or odd second before drawing text (for blinking effect)
-            if (Math.floor(millis() / 1000) % 2 === 0) {
-              text(currentLine.content, 32, currentLine.position);
-            }
-            // centre-aligned; I was alone...else to lick
-          } else if (
-            (index > 215 && index < 325) ||
-            (index > 82 && index < 91) ||
-            (index > 116 && index < 130) ||
-            (index > 463 && index < 470) ||
-            (index > 645 && index < 663) ||
-            (index > 634 && index < 637)
-          ) {
-            // push matrix to middle of canvas & draw centered text
-            push();
-            translate(width / 2, 0);
-            textAlign(CENTER, TOP);
-            text(currentLine.content, 32, currentLine.position);
-            pop();
-
-            // this is where the typing animation begins:
-          } else if (index > 339 && index < 362) {
-            // we keep scrolling until the first line is in the 1/8 of the height from the top
-            if (index === 340 && currentLine.position < width / 8) {
-              if (scroll) {
-                // pause scrolling
-                scroll = false;
-
-                // keep track of when animation starts
-                typeAnimationStart = millis();
-              }
-            }
-
-            if (!scroll) {
-              // check if we are on the right line
-              if (index - 340 === lineIndex) {
-                // 250 sets the speed of the typing
-                // divide time difference since start of animation by 250 to type four characters per second (set to 1000 for one character per second)
-                indexSinceStart = Math.floor(
-                  (millis() - typeAnimationStart) / 200
-                );
-
-                if (indexSinceStart <= currentLine.content.length) {
-                  text(
-                    currentLine.content.substring(0, indexSinceStart),
-                    32,
-                    currentLine.position
-                  );
-                } else {
-                  typeAnimationStart = millis();
-                  lineIndex++;
-                }
-              }
-            }
-
-            // draw full line if we have already typed through this line
-            if (index - 340 < lineIndex) {
-              text(currentLine.content, 32, currentLine.position);
-            }
-
-            // keep scrolling when we are done typing the lines
-            if (lineIndex === 21) {
-              scroll = true;
-            }
-
-            // where the typing animation ends
-
-            // strikethrough in my bed there is a silhouette...and fall asleep
-          } else if (index > 541 && index < 553) {
-            // draw line over text (strike through text)
-            const lineWidth = textWidth(currentLine.content);
-            const yPosition = currentLine.position + 7;
-            line(32, yPosition, lineWidth + 32, yPosition);
-            text(currentLine.content, 32, currentLine.position);
-          } else {
-            // draw text
-            text(currentLine.content, 32, currentLine.position);
-          }
-        }
-
-        // decrement line's position on y axis if scroll is turned on
-        if (scroll) {
-          currentLine.position -= 0.8;
-        }
-      });
-    }
+      // decrement line's position on y axis if scroll is turned on
+      if (scroll) {
+        currentLine.position -= 0.8;
+      }
+    });
+    // [The rest of your poem drawing logic here...]
   }
+
   infoIcon.position(windowWidth - 60 - 50, 10);
   soundButton.position(windowWidth - 10 - 50, 10);
 }
