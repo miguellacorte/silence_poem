@@ -18,7 +18,6 @@ const SOUND_ON_ICON = "assets/SoundOn_icon.png";
 const SOUND_OFF_ICON = "assets/SoundOff_icon.png";
 const START_DELAY = 2000; // milliseconds
 
-
 //  variables for type animation
 let typeAnimationStart;
 let indexSinceStart;
@@ -231,7 +230,7 @@ function setup() {
     .style("margin-left", "20px");
 
   let content = createDiv(
-    "<br>Raphael Koranda: Text, concept.<br> <br> Karin Knuttson: web development <br> <br>  Miguel La Corte: soundscape composition an web development"
+    "<br>Raphael Koranda: text + xoncept.<br> <br> Karin Knuttson: web development <br> <br>  Miguel La Corte: soundscape composition + web development"
   );
   content.parent(infoPopup);
   content
@@ -251,10 +250,14 @@ function setup() {
 
 function draw() {
   if (!started) {
-    background(255); // Clear the background
-    fill(0); // Set text color to black
-    text("Press spacebar to start", width / 2.5, height / 2); // Display the instruction text
-    textSize(24);
+    background(255); // background = white
+    fill(0); // text black
+    textSize(height * 0.04);
+    text("Press spacebar to start", width / 2.5, height / 2);
+
+    fill(0);
+    textSize(height * 0.03);
+    text("Use headphones for best experience", width / 2.6, height / 1.7);
   } else {
     // animation starts 2 seconds after canvas has been setup
     if (millis() > 2000) {

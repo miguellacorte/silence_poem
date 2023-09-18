@@ -148,7 +148,7 @@ function setup() {
     .style("margin-left", "10px");
 
   let content = createDiv(
-    "<br>Raphael Koranda: Text, concept.<br> <br> Karin Knuttson: web development <br> <br>  Miguel La Corte: soundscape composition an web development"
+    "<br>Raphael Koranda: text + concept.<br> <br> Karin Knuttson: web development <br> <br>  Miguel La Corte: soundscape composition + web development"
   );
   content.parent(infoPopup);
   content
@@ -241,11 +241,20 @@ function setup() {
 
 function drawStaticText() {
   staticGraphics.push();
-  staticGraphics.fill(0);
-  staticGraphics.textSize(16);
+
+  staticGraphics.textSize(height * 0.025);
   staticGraphics.text("Touch to start", width / 2.75, height / 2);
-  staticGraphics.textSize(10);
-  staticGraphics.text("Please turn silent mode off", width / 3, height / 1.4);
+
+  staticGraphics.textSize(height * 0.02);
+  staticGraphics.text(
+    "Put on headphones for best experience",
+    width / 5.2,
+    height / 1.73
+  );
+
+  staticGraphics.textSize(height * 0.015);
+  staticGraphics.text("Turn silent mode off", width / 2.7, height / 1.4);
+
   staticGraphics.pop();
 }
 
@@ -299,7 +308,6 @@ function drawDynamicContent() {
 }
 
 function draw() {
- 
   if (!started) {
     background(255);
     image(staticGraphics, 0, 0);
@@ -308,7 +316,6 @@ function draw() {
     return; // Exit the draw function
   }
 
-  
   if (millis() > 2000) {
     // Refresh background & text color
     background(255);
